@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>NetGuardian Dashboard</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<header class="topbar"><div class="brand">🛡️ NetGuardian</div><div class="user">{{ session.username }} <form method="post" action="{{ url_for('main.logout') }}"><button class="ghost">Logout</button></form></div></header>
+<header class="topbar"><div class="brand">🛡️ NetGuardian</div><div class="user">{{ session.username }} <form method="post" action="{{ url_for('main.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="ghost">Logout</button></form></div></header>
 <main class="container">
   <section class="hero"><div><h1>Network Operations</h1><p>Monitor authorized TCP services and review security events.</p></div><span class="live">● LIVE</span></section>
   <section class="stats">
