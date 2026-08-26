@@ -1,3 +1,4 @@
+import secrets
 from functools import wraps
 
 from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
@@ -27,6 +28,29 @@ def login_required(fn):
 def json_or_form(name, default=None):
     data = request.get_json(silent=True) or request.form
     return data.get(name, default)
+
+
+def ensure_csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_urlsafe(32)
+
+
+@bp.before_request
+def csrf_guard():
+    ensure_csrf_token()
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and request.endpoint != "main.login":
+        if "user_id" not in session:
+            return None
+        provided = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token")
+        if not provided or not secrets.compare_digest(provided, session["csrf_token"]):
+            return jsonify({"error": "invalid CSRF token"}), 400
+    return None
+
+
+@bp.app_context_processor
+def inject_security_context():
+    ensure_csrf_token()
+    return {"csrf_token": session.get("csrf_token")}
 
 
 @bp.get("/")
@@ -63,6 +87,7 @@ def login():
     session.clear()
     session["user_id"] = user["id"]
     session["username"] = user["username"]
+    session["csrf_token"] = secrets.token_urlsafe(32)
     record_event(Config.DB_PATH, "login_success", "info", ip, "User authenticated")
     return redirect(url_for("main.index"))
 
