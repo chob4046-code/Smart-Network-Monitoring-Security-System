@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NetGuardian Login</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+  <main class="card auth-card">
+    <div class="brand">🛡️ NetGuardian</div>
+    <h1>Network Operations Dashboard</h1>
+    <p class="muted">Sign in to monitor authorized network services.</p>
+    {% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+    <form method="post" autocomplete="off">
+      <label>Username<input name="username" required maxlength="100"></label>
+      <label>Password<input name="password" type="password" required maxlength="200"></label>
+      <button type="submit">Sign in</button>
+    </form>
+  </main>
+</body>
+</html>
