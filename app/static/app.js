@@ -1,5 +1,7 @@
 async function send(url, options={}) {
-  const response = await fetch(url, {headers:{'Content-Type':'application/json'}, ...options});
+  const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  const headers = {'Content-Type':'application/json', 'X-CSRF-Token': token, ...(options.headers || {})};
+  const response = await fetch(url, {...options, headers});
   if (!response.ok) {
     let message = 'Request failed';
     try { message = (await response.json()).error || message; } catch (_) {}
