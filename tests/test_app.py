@@ -26,6 +26,11 @@ def login(client):
     return client.post("/login", data={"username": "admin", "password": "TestPassword!123"})
 
 
+def csrf(client):
+    with client.session_transaction() as sess:
+        return sess["csrf_token"]
+
+
 def test_login_and_dashboard(client):
     response = login(client)
     assert response.status_code == 302
@@ -45,9 +50,20 @@ def test_target_api_requires_authentication(client):
     assert response.status_code == 401
 
 
-def test_target_can_be_created_after_login(client):
+def test_state_change_requires_csrf(client):
     login(client)
     response = client.post("/targets", json={"name":"Example","host":"127.0.0.1","port":5000})
+    assert response.status_code == 400
+
+
+def test_target_can_be_created_after_login(client):
+    login(client)
+    token = csrf(client)
+    response = client.post(
+        "/targets",
+        json={"name":"Example","host":"127.0.0.1","port":5000},
+        headers={"X-CSRF-Token": token},
+    )
     assert response.status_code == 201
     data = client.get("/api/overview")
     assert data.status_code == 200
